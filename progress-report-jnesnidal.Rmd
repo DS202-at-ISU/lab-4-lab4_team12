@@ -103,6 +103,20 @@ baseball <- baseball %>% left_join(
   people %>% select(nameFirst, nameLast, playerID), 
   by=c("nameFirst", "nameLast"))
 
+baseball <- baseball %>%
+  filter(playerID != "rodrifr04")
+
+baseball$yearID <- 2023
+baseball$votedBy <- "BBWAA"
+
+baseball$ballots <- 389
+baseball$needed <- 292
+baseball$votes <- baseball$Votes
+baseball$inducted <- ifelse(baseball$votes >= 292, "Y", "N")
+baseball$category <- NA
+baseball$needed_note <- NA
+
+baseball_final <- baseball[c("playerID", "yearID", "votedBy", "ballots", "needed", "votes", "inducted", "category", "needed_note")]
 
 ```
 
