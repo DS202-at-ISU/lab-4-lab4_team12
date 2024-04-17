@@ -10,3 +10,86 @@ library(tidyverse)
 ```
 
 # Zane Eason Lab Report Progress/Notes
+
+```{r}
+library(rvest)
+library(dplyr)
+hof <- Lahman::HallOfFame
+url <- "https://www.baseball-reference.com/awards/hof_2023.shtml"
+html <- read_html(url)
+tables <- html_table(html)
+
+tables <- tables[[1]]
+
+head(tables)
+
+write.csv(tables, "temp.csv", row.names=FALSE)
+backin <- readr::read_csv("temp.csv", skip = 1, show_col_types = FALSE)
+head(backin)
+
+backin$Name <- gsub("X-", "", backin$Name)
+
+backin$Name[2] <- str_replace(backin$Name[2], "\\sHOF", "")
+
+backin <- backin %>% separate('Name', into = c("nameFirst", "nameLast"), sep = "\\s")
+
+backin <- subset(backin, select = c(nameFirst, nameLast, Votes))
+
+people <- Lahman::People
+people <- subset(people, select = c(nameFirst, nameLast, playerID))
+
+people$nameFirst <- gsub(" ", "", people$nameFirst)
+people$nameLast <- gsub(" ", "", people$nameLast)
+people$nameFirst <- gsub("á", "a", people$nameFirst)
+people$nameLast <- gsub("á", "a", people$nameLast)
+people$nameFirst <- gsub("é", "e", people$nameFirst)
+people$nameLast <- gsub("é", "e", people$nameLast)
+people$nameFirst <- gsub("í", "i", people$nameFirst)
+people$nameLast <- gsub("í", "i", people$nameLast)
+people$nameFirst <- gsub("ó", "o", people$nameFirst)
+people$nameLast <- gsub("ó", "o", people$nameLast)
+people$nameFirst <- gsub("ú", "u", people$nameFirst)
+people$nameLast <- gsub("ú", "u", people$nameLast)
+
+
+backin$nameFirst <- gsub(" ", "", backin$nameFirst)
+backin$nameLast <- gsub(" ", "", backin$nameLast)
+backin$nameFirst <- gsub("á", "a", backin$nameFirst)
+backin$nameLast <- gsub("á", "a", backin$nameLast)
+backin$nameFirst <- gsub("é", "e", backin$nameFirst)
+backin$nameLast <- gsub("é", "e", backin$nameLast)
+backin$nameFirst <- gsub("í", "i", backin$nameFirst)
+backin$nameLast <- gsub("í", "i", backin$nameLast)
+backin$nameFirst <- gsub("ó", "o", backin$nameFirst)
+backin$nameLast <- gsub("ó", "o", backin$nameLast)
+backin$nameFirst <- gsub("ú", "u", backin$nameFirst)
+backin$nameLast <- gsub("ú", "u", backin$nameLast)
+
+backin$nameFirst <- gsub(" ", "", backin$nameFirst)
+backin$nameLast <- gsub(" ", "", backin$nameLast)
+
+backin <- backin %>% left_join(people %>% select(nameFirst, nameLast, playerID), by=c("nameFirst", "nameLast"))
+
+backin <- backin %>% filter(playerID != "rodrifr04")
+
+
+backin <- backin %>% mutate(yearID = 2023, votedBy = NA, ballots = 389, needed = 292, votes = Votes, inducted = ifelse(Votes>=292, "Y", "N"), category = NA, needed_note = NA)
+
+
+backin <- subset(backin, select = -c(nameFirst, nameLast, Votes))
+
+hof <- rbind(hof, backin)
+```
+
+
+```{r}
+hof %>% 
+  ggplot(aes(x = yearID, fill = inducted)) +
+  geom_bar() +
+  xlim(c(1936, 2023))
+```
+
+```{r}
+write.csv(hof, file="HallOfFame.csv", row.names=FALSE)
+```
+
