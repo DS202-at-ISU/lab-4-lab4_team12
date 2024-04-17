@@ -1,0 +1,108 @@
+---
+title: "progress-report-jnesnidal"
+author: "John Nesnidal"
+date: "2024-04-17"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(rvest)
+url <- "https://www.baseball-reference.com/awards/hof_2023.shtml"
+html <- read_html(url)
+tables <- html_table(html)
+```
+
+```{r}
+hof <- Lahman::HallOfFame
+people <- Lahman::People
+
+write.csv(tables[[1]], "temp.csv", row.names=FALSE)
+baseball <- readr::read_csv("temp.csv", skip = 1, show_col_types =FALSE)
+head(baseball, 3)
+```
+
+```{r}
+# Load necessary library for string manipulation
+library(stringr)
+
+# Function to extract first and last names
+extract_names <- function(full_name) {
+  # Split full name into components
+  name_parts <- str_split(full_name, "\\s+")
+  
+  name_parts[[1]][1] <- sub("^X-", "", name_parts[[1]][1])
+  
+  # Identify first and last names
+  if (length(name_parts[[1]]) >= 2) {
+    first_name <- name_parts[[1]][1]
+    last_name <- name_parts[[1]][2]
+  } else {
+    first_name <- ""
+    last_name <- ""
+  }
+  
+  
+  
+  # Return first and last names
+  return((c(first_name, last_name)))
+}
+```
+
+
+**Code for cleaning up the "baseball" data set**
+
+```{r}
+name_parts <- t(sapply(baseball$Name, extract_names))
+
+# Create new columns in the original data frame
+baseball$nameFirst <- name_parts[, 1]
+baseball$nameLast <- name_parts[, 2]
+
+people <- people %>% mutate(
+  `First Lastname` = paste(
+    str_replace(nameFirst,"\\. ", "."),  # this uses a regular expression
+    nameLast)
+)
+
+people$nameFirst = gsub(" ", "", people$nameFirst)
+people$nameLast = gsub(" ", "", people$nameLast)
+baseball$nameFirst = gsub(" ", "", baseball$nameFirst)
+baseball$nameLast = gsub(" ", "", baseball$nameLast)
+
+people$nameFirst = gsub("á", "a", people$nameFirst)
+people$nameLast = gsub("á", "a", people$nameLast)
+people$nameFirst = gsub("é", "e", people$nameFirst)
+people$nameLast = gsub("é", "e", people$nameLast)
+people$nameFirst = gsub("í", "i", people$nameFirst)
+people$nameLast = gsub("í", "i", people$nameLast)
+people$nameFirst = gsub("ó", "o", people$nameFirst)
+people$nameLast = gsub("ó", "o", people$nameLast)
+people$nameFirst = gsub("ú", "u", people$nameFirst)
+people$nameLast = gsub("ú", "u", people$nameLast)
+
+baseball$nameFirst = gsub("á", "a", baseball$nameFirst)
+baseball$nameLast = gsub("á", "a", baseball$nameLast)
+baseball$nameFirst = gsub("é", "e", baseball$nameFirst)
+baseball$nameLast = gsub("é", "e", baseball$nameLast)
+baseball$nameFirst = gsub("í", "i", baseball$nameFirst)
+baseball$nameLast = gsub("í", "i", baseball$nameLast)
+baseball$nameFirst = gsub("ó", "o", baseball$nameFirst)
+baseball$nameLast = gsub("ó", "o", baseball$nameLast)
+baseball$nameFirst = gsub("ú", "u", baseball$nameFirst)
+baseball$nameLast = gsub("ú", "u", baseball$nameLast)
+
+
+baseball <- baseball %>% left_join(
+  people %>% select(nameFirst, nameLast, playerID), 
+  by=c("nameFirst", "nameLast"))
+
+
+```
+
