@@ -62,11 +62,46 @@ extract_names <- function(full_name) {
 name_parts <- t(sapply(baseball$Name, extract_names))
 
 # Create new columns in the original data frame
-baseball$First.Name <- name_parts[, 1]
-baseball$Last.Name <- name_parts[, 2]
+baseball$nameFirst <- name_parts[, 1]
+baseball$nameLast <- name_parts[, 2]
+
+people <- people %>% mutate(
+  `First Lastname` = paste(
+    str_replace(nameFirst,"\\. ", "."),  # this uses a regular expression
+    nameLast)
+)
+
+people$nameFirst = gsub(" ", "", people$nameFirst)
+people$nameLast = gsub(" ", "", people$nameLast)
+baseball$nameFirst = gsub(" ", "", baseball$nameFirst)
+baseball$nameLast = gsub(" ", "", baseball$nameLast)
+
+people$nameFirst = gsub("á", "a", people$nameFirst)
+people$nameLast = gsub("á", "a", people$nameLast)
+people$nameFirst = gsub("é", "e", people$nameFirst)
+people$nameLast = gsub("é", "e", people$nameLast)
+people$nameFirst = gsub("í", "i", people$nameFirst)
+people$nameLast = gsub("í", "i", people$nameLast)
+people$nameFirst = gsub("ó", "o", people$nameFirst)
+people$nameLast = gsub("ó", "o", people$nameLast)
+people$nameFirst = gsub("ú", "u", people$nameFirst)
+people$nameLast = gsub("ú", "u", people$nameLast)
+
+baseball$nameFirst = gsub("á", "a", baseball$nameFirst)
+baseball$nameLast = gsub("á", "a", baseball$nameLast)
+baseball$nameFirst = gsub("é", "e", baseball$nameFirst)
+baseball$nameLast = gsub("é", "e", baseball$nameLast)
+baseball$nameFirst = gsub("í", "i", baseball$nameFirst)
+baseball$nameLast = gsub("í", "i", baseball$nameLast)
+baseball$nameFirst = gsub("ó", "o", baseball$nameFirst)
+baseball$nameLast = gsub("ó", "o", baseball$nameLast)
+baseball$nameFirst = gsub("ú", "u", baseball$nameFirst)
+baseball$nameLast = gsub("ú", "u", baseball$nameLast)
 
 
-
+baseball <- baseball %>% left_join(
+  people %>% select(nameFirst, nameLast, playerID), 
+  by=c("nameFirst", "nameLast"))
 
 
 ```
